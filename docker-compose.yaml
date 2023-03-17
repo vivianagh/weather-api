@@ -1,0 +1,20 @@
+version: '3'
+services:
+  mysql:
+    image: mysql:5.7
+    ports:
+      - 3306:3306
+    volumes:
+      - ./.data/mysql:/var/lib/mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=1234
+      - MYSQL_DATABASE=api
+
+  weather-api:
+    restart: always
+    depends_on:
+      - mysql
+    build: .
+    image: weather-api:0.0.1
+    ports:
+      - 8080:8080

@@ -1,4 +1,4 @@
-Recursos:
+# Recursos:
 
 ## 🔨 Funcionalidades del proyecto
 
@@ -55,6 +55,15 @@ CREATE TABLE `forecast` (
 );
 ```
 
+# Deploy usando docker compose
+
+Para levantar la app con docker compose:
+
+```sh
+docker compose up --build
+```
+
+# Contacto
 
 Viviana Herrera
 
