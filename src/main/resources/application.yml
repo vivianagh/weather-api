@@ -1,0 +1,24 @@
+resilience4j:
+  circuitbreaker:
+    instances:
+      accuWeather:
+        slidingWindowType: COUNT_BASED
+        slidingWindowSize: 10
+        minimumNumberOfCalls: 5
+        failureRateThreshold: 50
+        waitDurationInOpenState: 10s
+        permittedNumberOfCallsInHalfOpenState: 3
+  retry:
+    instances:
+      accuWeather:
+        maxAttempts: 3
+        waitDuration: 300ms
+        retryExceptions:
+          - java.io.IOException
+          - java.net.SocketTimeoutException
+  ratelimiter:
+    instances:
+      accuWeather:
+        limitForPeriod: 5
+        limitRefreshPeriod: 1s
+        timeoutDuration: 0

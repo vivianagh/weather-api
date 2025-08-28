@@ -1,12 +1,17 @@
 package com.example.weather.resource;
 
+import com.example.weather.model.io.DailyForecast;
 import com.example.weather.service.ForecastService;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
+import jakarta.validation.constraints.NotBlank;
+import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
+@Validated
 @RestController
 @RequestMapping("/api/forecast")
+@Tag(name = "Forecast", description = "Pronóstico del tiempo")
 public class ForecastResource {
 
     private final ForecastService forecastService;
@@ -16,9 +21,8 @@ public class ForecastResource {
     }
 
     @GetMapping("/city/today")
-    public ResponseEntity getForecastByCityName(@RequestParam(required = true) String city) {
-        return forecastService.getForecastByCity(city)
-                .map(ResponseEntity::ok)
-                .orElseGet(() -> ResponseEntity.status(HttpStatus.BAD_REQUEST).build());
+    @Operation(summary = "Pronóstico de hoy por nombre de ciudad")
+    public DailyForecast getForecastByCityName(@RequestParam @NotBlank String city) {
+        return forecastService.getForecastByCityOrThrow(city);
     }
 }

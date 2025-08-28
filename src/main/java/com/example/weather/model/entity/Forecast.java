@@ -1,10 +1,10 @@
 package com.example.weather.model.entity;
 
-import javax.persistence.*;
+import jakarta.persistence.*;
 import java.sql.Timestamp;
 
 @Entity
-@Table(schema="Forecast")
+@Table(name="forecast")
 public class Forecast {
 
     @Id
@@ -22,7 +22,7 @@ public class Forecast {
     @Column(nullable = false)
     private int temperature_maximum;
 
-    Forecast() {
+    protected Forecast() {
         //required by entity
     }
 

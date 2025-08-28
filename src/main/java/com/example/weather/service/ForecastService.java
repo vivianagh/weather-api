@@ -1,7 +1,9 @@
 package com.example.weather.service;
 
+import com.example.weather.exception.ExternalApiException;
 import com.example.weather.model.entity.Forecast;
 import com.example.weather.model.io.*;
+import com.example.weather.port.AccuWeatherClient;
 import com.example.weather.repository.ForecastRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
@@ -19,51 +21,43 @@ import java.util.Optional;
 @Service
 public class ForecastService {
 
-    private static final String URL_FORECAST = "http://dataservice.accuweather.com/forecasts/v1/daily/1day/{code}";
 
-    private final RestClient restClient;
-    @Autowired
-    private  final CityService cityService;
+    private static final ParameterizedTypeReference<ForecastIO> TYPE_FORECAST =
+            new ParameterizedTypeReference<>() {};
 
-    @Autowired
-    private  final ForecastRepository forecastRepository;
+    private final AccuWeatherClient client;
+    private final CityService cityService;
+    private final ForecastRepository forecastRepository;
 
-    public ForecastService(RestClient restClient, CityService cityService, ForecastRepository forecastRepository) {
-        this.restClient = restClient;
+    public ForecastService(AccuWeatherClient client,
+                           CityService cityService,
+                           ForecastRepository forecastRepository) {
+        this.client = client;
         this.cityService = cityService;
         this.forecastRepository = forecastRepository;
     }
-    public Optional<DailyForecast> getForecastByCode(String city, String code) {
-        Map<String, String> uriParam = new HashMap<>();
-        uriParam.put("code", code);
-        ForecastIO forecast = restClient
-                .performeRequestForecast(URL_FORECAST, uriParam, new ParameterizedTypeReference<ForecastIO>(){});
-        Optional<DailyForecast> dailyForecast = getDailyForecast(forecast.getDailyForecasts());
-        save(code, city, dailyForecast.get());
-        return dailyForecast;
+
+    public DailyForecast getForecastByCityOrThrow(String cityName) {
+        City city = cityService.searchCityOrThrow(cityName);
+        ForecastIO forecastIO = client.getDailyForecastByCode(city.getKey(), TYPE_FORECAST);
+
+        DailyForecast daily = extractFirst(forecastIO.getDailyForecasts());
+        save(city.getKey(), city.getLocalizedName(), daily);
+        return daily;
     }
 
-    private static Optional<DailyForecast> getDailyForecast(List<DailyForecast> dailyForecast) {
-        return dailyForecast.stream().findFirst();
+    private DailyForecast extractFirst(List<DailyForecast> list) {
+        return list.stream().findFirst()
+                .orElseThrow(() -> new ExternalApiException("No forecast data returned"));
     }
 
-    public Optional<DailyForecast> getForecastByCity(String citySearch) {
-        Optional<City> city = cityService.searchCity(citySearch);
-        return  city.isPresent()
-                ? getForecastByCode(city.get().getLocalizedName(), city.get().getKey())
-                : Optional.empty();
-    }
-
-    private void save(String key, String city,DailyForecast dailyForecast) {
-        TemporalAccessor parseSting = DateTimeFormatter.ISO_DATE_TIME.parse(dailyForecast.getDate());
-        Instant instant = Instant.from(parseSting);
-        Forecast forecast = new Forecast(
-                key,
-                city,
-                Timestamp.from(instant),
-                dailyForecast.getTemperature().getMinimum().getValue().intValue(),
-                dailyForecast.getTemperature().getMaximum().getValue().intValue()
+    private void save(String key, String city, DailyForecast daily) {
+        Instant instant = Instant.from(DateTimeFormatter.ISO_DATE_TIME.parse(daily.getDate()));
+        Forecast entity = new Forecast(
+                key, city, Timestamp.from(instant),
+                daily.getTemperature().getMinimum().getValue().intValue(),
+                daily.getTemperature().getMaximum().getValue().intValue()
         );
-        forecastRepository.save(forecast);
+        forecastRepository.save(entity);
     }
 }

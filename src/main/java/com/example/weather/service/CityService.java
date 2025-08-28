@@ -1,6 +1,8 @@
 package com.example.weather.service;
 
+import com.example.weather.exception.CityNotFoundException;
 import com.example.weather.model.io.City;
+import com.example.weather.port.AccuWeatherClient;
 import org.springframework.stereotype.Service;
 
 import java.util.*;
@@ -8,19 +10,19 @@ import java.util.*;
 @Service
 public class CityService {
 
-    private final RestClient restClient;
 
-    public CityService(RestClient restClient) {
-        this.restClient = restClient;
+    private final AccuWeatherClient client;
+
+    public CityService(AccuWeatherClient client) {
+        this.client = client;
     }
 
-    public Optional<City> searchCity(String city) {
-
-        List<City> result = restClient.getCityByName(city);
-
-        if (!result.isEmpty()) {
-            return Optional.of(new City(result.get(0).getKey(), result.get(0).getLocalizedName()));
+    public City searchCityOrThrow(String name) {
+        List<City> result = client.searchCityByName(name);
+        if (result == null || result.isEmpty()) {
+            throw new CityNotFoundException(name);
         }
-        return Optional.empty();
+        City c = result.get(0);
+        return new City(c.getKey(), c.getLocalizedName());
     }
 }
