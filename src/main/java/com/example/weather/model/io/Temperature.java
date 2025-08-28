@@ -2,23 +2,35 @@ package com.example.weather.model.io;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
 
-// TODO: MAX AND MIN ARE THE SAME CLASS. USE ONLY ONE. SUBCLASS OF TEMPERATURE?
 public class Temperature {
-    @JsonProperty("Minimum")
-    private Minimum minimum;
-    @JsonProperty("Maximum")
-    private Maximum maximum;
 
-    Temperature() {
+    @JsonProperty("Minimum")
+    private TemperatureValue minimum;
+
+    @JsonProperty("Maximum")
+    private TemperatureValue maximum;
+
+    public Temperature() {
     }
-    public Temperature(Minimum minimum, Maximum maximum) {
+
+    public Temperature(TemperatureValue minimum, TemperatureValue maximum) {
         this.minimum = minimum;
         this.maximum = maximum;
     }
-    public Minimum getMinimum() {
-        return this.minimum;
+
+    public TemperatureValue getMinimum() {
+        return minimum;
     }
-    public Maximum getMaximum() {
-        return this.maximum;
+
+    public void setMinimum(TemperatureValue minimum) {
+        this.minimum = minimum;
+    }
+
+    public TemperatureValue getMaximum() {
+        return maximum;
+    }
+
+    public void setMaximum(TemperatureValue maximum) {
+        this.maximum = maximum;
     }
 }

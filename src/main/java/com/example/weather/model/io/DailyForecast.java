@@ -8,7 +8,7 @@ public class DailyForecast {
     @JsonProperty("Temperature")
     private Temperature temperature;
 
-     DailyForecast() {
+     public DailyForecast() {
          //required by entity
     }
 

@@ -6,7 +6,6 @@ import io.github.resilience4j.circuitbreaker.annotation.CircuitBreaker;
 import io.github.resilience4j.ratelimiter.annotation.RateLimiter;
 import io.github.resilience4j.retry.annotation.Retry;
 import org.springframework.stereotype.Component;
-import com.example.weather.port.AccuWeatherClient;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.http.HttpStatusCode;
 import org.springframework.web.client.RestClient;
@@ -15,14 +14,14 @@ import com.example.weather.model.io.City;
 import java.util.List;
 
 @Component
-public class AccuWeatherRestClient implements AccuWeatherClient {
+public class WeatherClient implements AccuWeatherClient {
 
     private static final String URL_CITY = "/locations/v1/cities/search";
     private static final String URL_FORECAST = "/forecasts/v1/daily/1day/{code}";
 
     private final RestClient restClient;
 
-    public AccuWeatherRestClient(RestClient restClient) {
+    public WeatherClient(RestClient restClient) {
         this.restClient = restClient;
     }
 

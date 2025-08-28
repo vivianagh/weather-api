@@ -1,25 +1,21 @@
 package com.example.weather.service;
 
+import com.example.weather.exception.CityNotFoundException;
 import com.example.weather.exception.ExternalApiException;
 import com.example.weather.model.entity.Forecast;
 import com.example.weather.model.io.*;
 import com.example.weather.port.AccuWeatherClient;
 import com.example.weather.repository.ForecastRepository;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.core.ParameterizedTypeReference;
 import org.springframework.stereotype.Service;
 
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.format.DateTimeFormatter;
-import java.time.temporal.TemporalAccessor;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
-import java.util.Optional;
 
 @Service
-public class ForecastService {
+public class WeatherService {
 
 
     private static final ParameterizedTypeReference<ForecastIO> TYPE_FORECAST =
@@ -29,16 +25,19 @@ public class ForecastService {
     private final CityService cityService;
     private final ForecastRepository forecastRepository;
 
-    public ForecastService(AccuWeatherClient client,
-                           CityService cityService,
-                           ForecastRepository forecastRepository) {
+    public WeatherService(AccuWeatherClient client,
+                          CityService cityService,
+                          ForecastRepository forecastRepository) {
         this.client = client;
         this.cityService = cityService;
         this.forecastRepository = forecastRepository;
     }
 
-    public DailyForecast getForecastByCityOrThrow(String cityName) {
+    public DailyForecast getWeatherByCityOrThrow(String cityName) {
         City city = cityService.searchCityOrThrow(cityName);
+        if (city == null) {
+            throw new CityNotFoundException(cityName);
+        }
         ForecastIO forecastIO = client.getDailyForecastByCode(city.getKey(), TYPE_FORECAST);
 
         DailyForecast daily = extractFirst(forecastIO.getDailyForecasts());
